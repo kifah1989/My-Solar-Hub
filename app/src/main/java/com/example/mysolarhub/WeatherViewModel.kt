@@ -18,7 +18,7 @@ class WeatherViewModel(app: Application) : AndroidViewModel(app) {
     fun checkPermission(granted: Boolean) {
         permissionGranted.value = granted
         if (granted) error.value = null
-        else error.value = "Location permission not granted."
+        else error.value = getApplication<Application>().getString(R.string.location_permission_not_granted)
     }
 
     fun fetchWeatherAndLocation() {
@@ -31,7 +31,7 @@ class WeatherViewModel(app: Application) : AndroidViewModel(app) {
                 weather.value = repository.fetchWeather(loc.latitude, loc.longitude)
                 error.value = null
             } else {
-                error.value = "Failed to get location."
+                error.value = getApplication<Application>().getString(R.string.failed_location)
             }
             loading.value = false
         }
@@ -41,4 +41,3 @@ class WeatherViewModel(app: Application) : AndroidViewModel(app) {
         fetchWeatherAndLocation()
     }
 }
-
