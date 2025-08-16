@@ -15,25 +15,29 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.mysolarhub.ui.WeatherLocationView
 import com.example.mysolarhub.ui.PermissionRequestView
+import com.example.mysolarhub.ui.screens.SystemConfigScreen
+import com.example.mysolarhub.ui.screens.LoadProfileScreen
+import com.example.mysolarhub.ui.screens.DashboardScreen
 import com.example.mysolarhub.ui.theme.MySolarHubTheme
 import androidx.core.app.ActivityCompat
 
 class MainActivity : ComponentActivity() {
-    private val TAG = "WeatherApp"
+    private val TAG = "SolarHubApp"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             MySolarHubTheme {
-                val viewModel: WeatherViewModel = viewModel()
-                val weather by viewModel.weather
-                val error by viewModel.error
-                val location by viewModel.location
-                val loading by viewModel.loading
+                val viewModel: SolarHubViewModel = viewModel()
+                val currentScreen by viewModel.currentScreen
                 val permissionGranted by viewModel.permissionGranted
+                val error by viewModel.error
+                val loading by viewModel.loading
+                val solarSystemConfig by viewModel.solarSystemConfig
+                val homeLoadProfile by viewModel.homeLoadProfile
+                val dailyForecast by viewModel.dailyForecast
 
                 val permissionLauncher = rememberLauncherForActivityResult(
                     ActivityResultContracts.RequestPermission()
@@ -74,17 +78,34 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.padding(innerPadding)
                         )
                     } else {
-                        WeatherLocationView(
-                            weather,
-                            location,
-                            error,
-                            loading,
-                            onRetry = {
-                                Log.d(TAG, "Retry button pressed")
-                                viewModel.retry()
-                            },
-                            modifier = Modifier.padding(innerPadding)
-                        )
+                        when (currentScreen) {
+                            SolarHubScreen.SYSTEM_CONFIG -> {
+                                SystemConfigScreen(
+                                    config = solarSystemConfig,
+                                    onConfigUpdate = viewModel::updateSolarSystemConfig,
+                                    onNext = { viewModel.navigateToScreen(SolarHubScreen.LOAD_PROFILE) },
+                                    modifier = Modifier.padding(innerPadding)
+                                )
+                            }
+                            SolarHubScreen.LOAD_PROFILE -> {
+                                LoadProfileScreen(
+                                    loadProfile = homeLoadProfile,
+                                    onProfileUpdate = viewModel::updateHomeLoadProfile,
+                                    onAddAppliance = viewModel::addApplianceLoad,
+                                    onRemoveAppliance = viewModel::removeApplianceLoad,
+                                    onNext = { viewModel.navigateToScreen(SolarHubScreen.DASHBOARD) },
+                                    modifier = Modifier.padding(innerPadding)
+                                )
+                            }
+                            SolarHubScreen.DASHBOARD -> {
+                                DashboardScreen(
+                                    forecast = dailyForecast,
+                                    onRefresh = { viewModel.retry() },
+                                    onBackToConfig = { viewModel.navigateToScreen(SolarHubScreen.SYSTEM_CONFIG) },
+                                    modifier = Modifier.padding(innerPadding)
+                                )
+                            }
+                        }
                     }
                 }
             }

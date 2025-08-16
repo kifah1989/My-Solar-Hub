@@ -8,4 +8,13 @@
     <string name="location_permission_not_granted">Location permission not granted.</string>
     <string name="weather_at">Weather at (%1$s, %2$s): %3$s°C, Wind: %4$s m/s</string>
     <string name="weather_default">Weather: —</string>
+
+    <!-- Solar Hub specific strings -->
+    <string name="solar_system_config">Solar System Configuration</string>
+    <string name="home_load_profile">Home Load Profile</string>
+    <string name="energy_dashboard">Energy Dashboard</string>
+    <string name="configure_system">Configure System</string>
+    <string name="refresh_data">Refresh Data</string>
+    <string name="no_forecast_data">No forecast data available</string>
+    <string name="configure_system_message">Configure your system and location to see energy forecast</string>
 </resources>
