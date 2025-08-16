@@ -21,6 +21,9 @@ import com.example.mysolarhub.ui.screens.LoadProfileScreen
 import com.example.mysolarhub.ui.screens.DashboardScreen
 import com.example.mysolarhub.ui.theme.MySolarHubTheme
 import androidx.core.app.ActivityCompat
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 
 class MainActivity : ComponentActivity() {
     private val TAG = "SolarHubApp"
@@ -31,13 +34,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             MySolarHubTheme {
                 val viewModel: SolarHubViewModel = viewModel()
-                val currentScreen by viewModel.currentScreen
                 val permissionGranted by viewModel.permissionGranted
                 val error by viewModel.error
                 val loading by viewModel.loading
                 val solarSystemConfig by viewModel.solarSystemConfig
                 val homeLoadProfile by viewModel.homeLoadProfile
                 val dailyForecast by viewModel.dailyForecast
+
+                val navController = rememberNavController()
 
                 val permissionLauncher = rememberLauncherForActivityResult(
                     ActivityResultContracts.RequestPermission()
@@ -78,31 +82,35 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.padding(innerPadding)
                         )
                     } else {
-                        when (currentScreen) {
-                            SolarHubScreen.SYSTEM_CONFIG -> {
+                        NavHost(
+                            navController = navController,
+                            startDestination = "system_config",
+                            modifier = Modifier.padding(innerPadding)
+                        ) {
+                            composable("system_config") {
                                 SystemConfigScreen(
                                     config = solarSystemConfig,
                                     onConfigUpdate = viewModel::updateSolarSystemConfig,
-                                    onNext = { viewModel.navigateToScreen(SolarHubScreen.LOAD_PROFILE) },
-                                    modifier = Modifier.padding(innerPadding)
+                                    onNext = { navController.navigate("load_profile") },
+                                    modifier = Modifier.fillMaxSize()
                                 )
                             }
-                            SolarHubScreen.LOAD_PROFILE -> {
+                            composable("load_profile") {
                                 LoadProfileScreen(
                                     loadProfile = homeLoadProfile,
                                     onProfileUpdate = viewModel::updateHomeLoadProfile,
                                     onAddAppliance = viewModel::addApplianceLoad,
                                     onRemoveAppliance = viewModel::removeApplianceLoad,
-                                    onNext = { viewModel.navigateToScreen(SolarHubScreen.DASHBOARD) },
-                                    modifier = Modifier.padding(innerPadding)
+                                    onNext = { navController.navigate("dashboard") },
+                                    modifier = Modifier.fillMaxSize()
                                 )
                             }
-                            SolarHubScreen.DASHBOARD -> {
+                            composable("dashboard") {
                                 DashboardScreen(
                                     forecast = dailyForecast,
                                     onRefresh = { viewModel.retry() },
-                                    onBackToConfig = { viewModel.navigateToScreen(SolarHubScreen.SYSTEM_CONFIG) },
-                                    modifier = Modifier.padding(innerPadding)
+                                    onBackToConfig = { navController.popBackStack("system_config", false) },
+                                    modifier = Modifier.fillMaxSize()
                                 )
                             }
                         }
