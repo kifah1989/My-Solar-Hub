@@ -76,9 +76,6 @@ fun DashboardScreen(
             // Summary Cards
             SummaryCards(forecast)
 
-            // 5-Day solar production prediction
-            DailyBreakdownCard(forecast)
-
             // Energy Chart
             EnergyChart(forecast.hourlyData)
 
@@ -453,79 +450,6 @@ fun HourlyDataCard(data: HourlyEnergyData) {
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error
                 )
-            }
-        }
-    }
-}
-
-@Composable
-fun DailyBreakdownCard(forecast: DailyEnergyForecast) {
-    // Create a simple 5-day projection. If the model had multi-day data this would use it;
-    // for now derive five-day estimates from today's total solar production using
-    // small deterministic multipliers to simulate variation.
-    val base = forecast.totalSolarProductionKwh
-    val multipliers = listOf(0.95f, 1.0f, 1.05f, 0.9f, 1.1f)
-    val days = List(5) { idx ->
-        val value = base * multipliers[idx]
-        Pair("Day ${idx + 1}", value)
-    }
-
-    Card {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text(
-                "5-Day Solar Production Prediction",
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            // Bar chart (simple)
-            Canvas(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp)
-            ) {
-                val width = size.width
-                val height = size.height
-                val padding = 12.dp.toPx()
-                val chartWidth = width - 2 * padding
-                val chartHeight = height - 2 * padding
-
-                val maxVal = (days.maxOfOrNull { it.second } ?: 1.0).toFloat()
-                val barWidth = chartWidth / days.size
-
-                days.forEachIndexed { index, pair ->
-                    val x = padding + index * barWidth + barWidth * 0.1f
-                    val barActualWidth = barWidth * 0.8f
-                    val barHeight = (chartHeight * (pair.second.toFloat() / maxVal)).toFloat()
-                    val top = padding + chartHeight - barHeight
-
-                    drawRoundRect(
-                        color = Color(0xFFFFB74D),
-                        topLeft = Offset(x, top),
-                        size = androidx.compose.ui.geometry.Size(barActualWidth, barHeight),
-                        cornerRadius = androidx.compose.ui.geometry.CornerRadius(6f, 6f)
-                    )
-                }
-            }
-
-            // Day labels and values
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                days.forEach { (label, value) ->
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(label, style = MaterialTheme.typography.bodySmall)
-                        Text(
-                            "${String.format(Locale.getDefault(), "%.1f", value)} kWh",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
             }
         }
     }
